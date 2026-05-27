@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tareo TSM</title>
+  <link rel="icon" type="image/png" href="https://topsolutionmetal.com/wp-content/uploads/2022/07/1.png">
+  <meta name="description" content="Filtro automático de marcador para Top Solution Metal.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="title-wrap">
+      <div class="logo" aria-hidden="true">
+        <img src="https://topsolutionmetal.com/wp-content/uploads/2022/07/1.png" alt="TSM Logo" style="height: 100%; object-fit: contain;">
+      </div>
+      <div class="title">Filtro Automático del Marcador</div>
+    </div>
+
+    <label class="theme-switch" title="Cambiar tema visual">
+      <input type="checkbox" id="themeToggleBtn">
+      <span class="slider round">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </span>
+    </label>
+  </div>
+
+  <section class="top-filters">
+    <div class="top-filters-grid">
+      <div class="field upload-box">
+        <span>Archivo Marcador (IVMS)</span>
+        <div id="dropzone" class="dropzone">
+          <div class="upload-row">
+            <label class="file-btn" for="fileInput">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Seleccionar archivo
+            </label>
+            <input id="fileInput" class="file-input" type="file" accept=".xlsx,.xls,.csv">
+            <div id="fileName" class="file-name">Ningún archivo seleccionado</div>
+            <button id="sampleBtn" class="btn btn-ghost" type="button">Cargar ejemplo</button>
+          </div>
+        </div>
+      </div>
+      <label class="field"><span>Inicio Rango</span><input id="startDate" type="date"></label>
+      <label class="field"><span>Fin Rango</span><input id="endDate" type="date"></label>
+    </div>
+    <div class="header-actions">
+      <button id="processBtn" class="btn btn-primary" type="button">Procesar</button>
+      <button id="downloadXlsxBtn" class="btn btn-secondary" type="button" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descargar Excel
+      </button>
+      <button id="downloadCsvBtn" class="btn btn-secondary" type="button" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descargar CSV
+      </button>
+    </div>
+    <div id="errorBox" class="error-box hidden"></div>
+    <div class="status-row">
+      <div class="status-left">
+        <div id="statusBadge" class="pill">Esperando archivo...</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stat">
+      <div class="stat-info">
+        <div class="k">Registros válidos</div>
+        <div class="v" id="statRows">0</div>
+      </div>
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-info">
+        <div class="k">Colaboradores filtrados</div>
+        <div class="v" id="statWorkers">0</div>
+      </div>
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-info">
+        <div class="k">Días procesados</div>
+        <div class="v" id="statDays">0</div>
+      </div>
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-info">
+        <div class="k">Filas resumen</div>
+        <div class="v" id="statSummary">0</div>
+      </div>
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="main-card">
+    <div class="main-toolbar">
+      <div class="tabs">
+        <button class="tab active" data-tab="resumen">Resumen diario</button>
+        <button class="tab" data-tab="tareo">Tareo Global</button>
+        <button class="tab" data-tab="comparativa">Tareo por Hora</button>
+        <button class="tab" data-tab="bd">BD Limpia</button>
+        <button class="tab" data-tab="anomalias">Anomalías / Faltas</button>
+      </div>
+    </div>
+
+    <div class="filter-bar" id="filterBar" style="display:none;">
+      <div class="filter-group">
+        <select id="filterEmpresa" class="filter-select"><option value="ALL">Todas las Empresas</option></select>
+        <select id="filterContrato" class="filter-select"><option value="ALL">Tipo de Contratación</option></select>
+      </div>
+
+      <div class="leyenda-colores">
+        <div class="leyenda-item" title="Falta o sin marcaciones"><span class="leyenda-box alerta-f"></span>Falta</div>
+        <div class="leyenda-item" title="Solo tiene entrada o solo salida"><span class="leyenda-box alerta-i"></span>Incompleto</div>
+        <div class="leyenda-item" title="Llegó después de la tolerancia (15 min)"><span class="leyenda-box alerta-t"></span>Tardanza</div>
+        <div class="leyenda-item" title="Marcaciones duplicadas"><span class="leyenda-box alerta-rev"></span>Revisar</div>
+        <div class="leyenda-item" title="Llegó tarde y tiene marcaciones duplicadas"><span class="leyenda-box alerta-trev"></span>Tardanza + Rev</div>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button id="fullscreenBtn" class="btn btn-ghost" type="button" title="Pantalla Completa">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Ampliar
+        </button>
+        <button id="clearFiltersBtn" class="btn btn-ghost" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          Borrar Filtros
+        </button>
+      </div>
+    </div>
+
+    <div id="tab-resumen" class="table-box"></div>
+    <div id="tab-tareo" class="table-box hidden"></div>
+    <div id="tab-comparativa" class="table-box hidden"></div>
+    <div id="tab-bd" class="table-box hidden"></div>
+    <div id="tab-anomalias" class="table-box hidden"></div>
+  </section>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
